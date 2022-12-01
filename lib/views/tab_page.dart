@@ -4,6 +4,9 @@ import 'dart:typed_data';
 
 import 'package:cross_file/cross_file.dart';
 import 'package:esmaulhusna/admob/ad_helper.dart';
+import 'package:esmaulhusna/database_access_object/isimler_dao.dart';
+import 'package:esmaulhusna/views/home.dart';
+
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
@@ -17,9 +20,10 @@ class Tab_Page extends StatefulWidget {
   late String isim;
   late int zikirSayisi;
   late String fazilet;
+  late int zikirSayac ;
 
 
-   Tab_Page({required this.id,required this.isim,required this.zikirSayisi,required this.fazilet});
+   Tab_Page({required this.id,required this.isim,required this.zikirSayisi,required this.fazilet,required this.zikirSayac});
 
   @override
   State<Tab_Page> createState() => _Tab_PageState();
@@ -27,29 +31,37 @@ class Tab_Page extends StatefulWidget {
 
 class _Tab_PageState extends State<Tab_Page>  with TickerProviderStateMixin{
 
+
+  Future<void> zikirSifirlama() async{
+      widget.zikirSayac = 0;
+    await IsimlerDao().zikirSifirla(widget.id,widget.zikirSayac);
+    print("id : ${widget.id} İsim ${widget.isim}  zikir Sayacı sıfırlandı = ${widget.zikirSayac}");
+  }
+
+  Future<void> zikirSayaci() async{
+    setState(() {
+      if(widget.zikirSayac == widget.zikirSayisi){
+        widget.zikirSayac++;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${widget.isim} Esması Tamamlandı")));
+      }else{
+        widget.zikirSayac++;
+      }
+    });
+    setState(() {
+      IsimlerDao().zikirCek(widget.id,widget.zikirSayac);
+    });
+    print("id : ${widget.id} İsim ${widget.isim}  zikir Sayacı  = ${widget.zikirSayac}");
+  }
+
   ScreenshotController screenshotController = ScreenshotController();
-
-  //
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   tabController = TabController(length: 1,vsync: this);
-  // }
-
-  // Future<List<Isimler>> esmalariGetir() async{
-  //   var liste= await IsimlerDao().tumIsimler();
-  //   for(Isimler i in liste){
-  //     print("${i.isim}");
-  //     isim = i.isim;
-  //   }
-  //   return liste;
-  // }
   BannerAd? _banner;
 
   void initState() {
     super.initState();
     _createBannerAd();
+
   }
+
   void _createBannerAd(){
     _banner = BannerAd(
       size: AdSize.largeBanner,
@@ -59,15 +71,36 @@ class _Tab_PageState extends State<Tab_Page>  with TickerProviderStateMixin{
     )..load();
   }
 
-
-
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
         appBar: (
             AppBar(centerTitle: true,iconTheme: IconThemeData(color: Colors.black),
               title: Text("${widget.isim}",style: TextStyle(color: Colors.black),),
+              leading: IconButton(onPressed: () async{
+                setState(() {
+
+                });
+                await IsimlerDao().tumIsimler();
+                Navigator.push(context, MaterialPageRoute(builder: (context)=>Home()));
+              }, icon: Icon(Icons.arrow_back)),
+              actions: [
+               PopupMenuButton(itemBuilder: (context)=>[
+                     PopupMenuItem(child: TextButton.icon(icon: Icon(Icons.restart_alt),onPressed: (){
+                       zikirSifirlama();
+                       setState(() {
+                       });
+                     }, label: Text("Zikri Sıfırla"))),
+
+                     PopupMenuItem(child: TextButton.icon(icon: Icon(Icons.share),onPressed: ()async{
+                       final image = await screenshotController.capture();
+                       if(image == null) return;
+                       await saveImage(image);
+                       saveAndShare(image);
+                     }, label: Text("Paylaş"))),
+                   ],elevation: 50,color: Colors.black,
+               ),
+              ],
             )
         ),
         body:Screenshot(controller: screenshotController,
@@ -84,7 +117,8 @@ class _Tab_PageState extends State<Tab_Page>  with TickerProviderStateMixin{
                         child: Padding(
                           padding: const EdgeInsets.all(10.0),
                           child: SizedBox(width: 400,height: 543,
-                            child: Card(color: Colors.transparent,
+                            child: Card(
+                              color: Colors.transparent,
                               child: Column(
                                 children: [
                                   Row(
@@ -106,10 +140,6 @@ class _Tab_PageState extends State<Tab_Page>  with TickerProviderStateMixin{
                                     children: [
                                       Column(
                                         children: [
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text("Fazileti",style: TextStyle(fontWeight: FontWeight.w500,fontSize: 30),textAlign: TextAlign.center,),
-                                          ),
                                           SizedBox(width: 300,
                                             child: Container(
                                                 child: Padding(
@@ -130,52 +160,42 @@ class _Tab_PageState extends State<Tab_Page>  with TickerProviderStateMixin{
                                         children: [
                                           Padding(
                                             padding: const EdgeInsets.only(top: 100.0,bottom: 30),
-                                            child: Text("Günlük Zikir Sayısı ",style: TextStyle(fontSize: 20,fontWeight: FontWeight.w500,color: Colors.white70),textAlign: TextAlign.center,),
+                                            child: Text("Günlük Zikir Sayısı : ${widget.zikirSayisi}",style: TextStyle(fontSize: 20,fontWeight: FontWeight.w500,color: Colors.white70),textAlign: TextAlign.center,),
                                           ),
 
                                           Padding(
                                             padding: const EdgeInsets.all(10.0),
-                                            child: Text("${widget.zikirSayisi}",style: TextStyle(fontSize: 60,fontWeight: FontWeight.bold,color: Colors.white,),textAlign: TextAlign.center),
+                                            child: Text("${widget.zikirSayac}",style: TextStyle(fontSize: 45,fontWeight: FontWeight.bold,color: Colors.white,),textAlign: TextAlign.center),
                                           ),
                                         ],
                                       ),
-
-                                    ],
-                                  ),
-                                  Spacer(),
-                                  Padding(
-                                    padding: const EdgeInsets.all(10.0),
-                                    child: ElevatedButton.icon(
-                                        icon: Icon(Icons.share),
-                                        onPressed: () async{
-                                          final image = await screenshotController.capture();
-                                          if(image == null) return;
-                                          await saveImage(image);
-                                          saveAndShare(image);
-                                    }, label: Text("Paylaş"),
-                                    ),
-                                  ),
                                 ],
                               ),
-                            ),
+                                  Spacer(),
+                            ]
+                              ),
                           ),
                         ),
                       ),
                     ),
-
                 ),
-                // Container(
-                //   margin: const EdgeInsets.all(0),child: AdWidget(ad: _banner!,),
-                // )
+                )
               ],
             ),
           ),
         ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.all(5.0),
+        child: FloatingActionButton.extended(icon: Icon(Icons.add_sharp),label: Text("Zikir Çek"),onPressed: (){
+          zikirSayaci();
+
+        }),
+      ),
       bottomNavigationBar: _banner == null ? Container(child: Text("Reklam Alanı"),):
       Container(color: Colors.transparent,
         margin: const EdgeInsets.all(0),height: 100,child: AdWidget(ad: _banner!,),
       ),
-
     );
 
   }

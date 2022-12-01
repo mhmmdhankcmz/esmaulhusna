@@ -28,6 +28,7 @@ class _HomeState extends State<Home> {
 
   BannerAd? _banner;
 
+
   void initState() {
     super.initState();
     _createBannerAd();
@@ -54,6 +55,7 @@ class _HomeState extends State<Home> {
         contraints.maxHeight;
         return Scaffold(
             appBar: AppBar(
+              leading: IconButton(onPressed: uygulamayiKapat, icon: Icon(Icons.power_settings_new)),
               centerTitle: true,
               title: aramaYapiliyormu
                   ? TextField(
@@ -101,10 +103,10 @@ class _HomeState extends State<Home> {
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       var isimlerListesi = snapshot.data;
-
                       return ListView.builder(
                         itemCount: isimlerListesi?.length,
                         itemBuilder: (context, index) {
+
                           var isim = isimlerListesi![index];
 
                           return Padding(
@@ -121,6 +123,7 @@ class _HomeState extends State<Home> {
                                                 isim: isim.isim,
                                                 fazilet: isim.fazilet,
                                                 zikirSayisi: isim.zikirSayisi,
+                                                zikirSayac: isim.zikir,
                                               )));
                                 },
                                 child: Card(
@@ -153,13 +156,13 @@ class _HomeState extends State<Home> {
                                           ),
                                         ),
                                         Spacer(),
-                                        // Padding(
-                                        //   padding: const EdgeInsets.only(right: 5),
-                                        //   child: Text("${isim.zikirSayisi}",
-                                        //     style: TextStyle(fontSize: 20,
-                                        //         fontWeight: FontWeight.bold,
-                                        //         color: Colors.white54),),
-                                        // ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(right: 5),
+                                          child: Text("${isim.zikir}",
+                                            style: TextStyle(fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white54),),
+                                        ),
                                       ],
                                     )),
                               ),

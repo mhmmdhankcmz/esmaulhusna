@@ -6,6 +6,8 @@ import 'package:sqflite/sqflite.dart';
 
 class DbHelper {
   static final dbName = "esmalar.sqlite";
+  static final table = "esma";
+  static final columnName = "zikir";
 
   static Future<Database> dbAccess() async {
     String dbPath = join(await getDatabasesPath(), dbName);
