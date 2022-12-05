@@ -36,6 +36,7 @@ class _Tab_PageState extends State<Tab_Page>  with TickerProviderStateMixin{
       widget.zikirSayac = 0;
     await IsimlerDao().zikirSifirla(widget.id,widget.zikirSayac);
     print("id : ${widget.id} İsim ${widget.isim}  zikir Sayacı sıfırlandı = ${widget.zikirSayac}");
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${widget.isim} Esması Sıfırlandı ", textAlign:TextAlign.center ,style: TextStyle(fontSize: 15,),)));
   }
 
   Future<void> zikirSayaci() async{
@@ -90,7 +91,7 @@ class _Tab_PageState extends State<Tab_Page>  with TickerProviderStateMixin{
                        zikirSifirlama();
                        setState(() {
                        });
-                     }, label: Text("Zikri Sıfırla"))),
+                     }, label: Text("Zikri Sıfırla" ))),
 
                      PopupMenuItem(child: TextButton.icon(icon: Icon(Icons.share),onPressed: ()async{
                        final image = await screenshotController.capture();
@@ -98,6 +99,7 @@ class _Tab_PageState extends State<Tab_Page>  with TickerProviderStateMixin{
                        await saveImage(image);
                        saveAndShare(image);
                      }, label: Text("Paylaş"))),
+
                    ],elevation: 50,color: Colors.black,
                ),
               ],
